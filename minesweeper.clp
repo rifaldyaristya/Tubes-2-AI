@@ -156,15 +156,13 @@
 
 ; ============== OPEN SAFE CELL ================
 
-; expand safe cell that doesn't contain number
-(defrule open-non-number-cell
+; expand safe cell until it meets numbered cells
+(defrule open-safe-cell
 	(declare(salience 1))
 	(bomb-set)
 	(safe-pos ?x ?y)
-	(safe-pos ?x1 ?y1)
 	(arena-size ?size)
 	(direction ?dirx ?diry)
-	(not (and (test(= ?x1 (+ ?x ?dirx))) (test(= ?y1 (+ ?y ?diry)))))
 	(not (num-pos ?x ?y ?))
 	(test (< (+ ?y ?diry) ?size))
 	(test (>= (+ ?y ?diry) 0))
@@ -175,11 +173,13 @@
 
 )
 
-; mark safe cell as opened
+; mark safe numbered cell as discoverd
 (defrule open-number
 	(safe-pos ?x ?y)
-	(num-pos ?x ?y ?)
+	(num-pos ?x ?y ?num)
 	=>
-	(assert(num-discovered-pos ?x ?y))
+	(assert(num-discovered-pos ?x ?y ?num))
 )
+
+
 
