@@ -7,6 +7,7 @@
 	(direction -1 1)
 	(direction -1 0)
 	(direction -1 -1)
+	(safe-pos 0 0)
 )
 
 ; definitions:
@@ -95,11 +96,13 @@
 	(arena-size ?size)
 	(bomb-pos ?x ?y)
 	(direction ?dirx ?diry)
+	; the cell hasn't marked yet
 	(not (and
 		(num-pos ?x1 ?y1 ?num)
 		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
 		)
 	)
+	; the cell doesn't contain bomb
 	(not (and
 		(bomb-pos ?x1 ?y1)
 		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
@@ -142,8 +145,41 @@
 
 ; cleanup facts
 (defrule place-num-around-bomb-2
+	(declare(salience 2))
 	?placed-by-fact <- (placed-by ?x ?y ?x1 ?y1)
 	=>
 	(retract ?placed-by-fact)
 	(assert (bomb-set))
 )
+
+; 
+
+; ============== OPEN SAFE CELL ================
+
+; expand safe cell that doesn't contain number
+(defrule open-non-number-cell
+	(declare(salience 1))
+	(bomb-set)
+	(safe-pos ?x ?y)
+	(safe-pos ?x1 ?y1)
+	(arena-size ?size)
+	(direction ?dirx ?diry)
+	(not (and (test(= ?x1 (+ ?x ?dirx))) (test(= ?y1 (+ ?y ?diry)))))
+	(not (num-pos ?x ?y ?))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
+
+)
+
+; mark safe cell as opened
+(defrule open-number
+	(safe-pos ?x ?y)
+	(num-pos ?x ?y ?)
+	=>
+	(assert(num-discovered-pos ?x ?y))
+)
+
