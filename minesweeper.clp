@@ -1,0 +1,149 @@
+(deffacts directions
+	(direction 0 -1)
+	(direction 1 -1)
+	(direction 1 0)
+	(direction 1 1)
+	(direction 0 1)
+	(direction -1 1)
+	(direction -1 0)
+	(direction -1 -1)
+)
+
+; definitions:
+; arena-size size
+; bomb-pos x y
+; num-pos x y num-of-bombs-around
+
+
+; ============= INITIALIZE ===============
+
+; start
+(defrule start
+	?init <- (initial-fact)
+	=>
+	(retract ?init)
+	(printout t "START" crlf)
+	(assert (input-size-trigger))
+)
+
+; input size
+(defrule input-size
+	?trigger <- (input-size-trigger)
+	=>
+	(retract ?trigger)
+	(printout t "Input size (4-10): ")
+	(assert (arena-size =(read)))
+	(assert (input-bomb-num-trigger))
+)
+
+; input num of bombs
+(defrule input-bomb-num
+	?trigger <- (input-bomb-num-trigger)
+	=>
+	(retract ?trigger)
+	(printout t "Input num of bombs: ")
+	(assert (num-bombs =(read)))
+	(assert (input-bomb-pos-start-trigger))
+)
+
+; start input bomb coordinates
+(defrule input-bomb-pos-start
+	?trigger <- (input-bomb-pos-start-trigger)
+	(num-bombs ?num)
+	=>
+	(retract ?trigger)
+	(printout t "Input position of " ?num " bombs" crlf)
+	(assert (input-num-bombs 0))
+)
+
+; input bomb coordinate
+(defrule input-bomb-pos
+	(declare (salience 9))
+	?num-bombs-input <- (input-num-bombs ?num)
+	(num-bombs ?num-total)
+	(test (< ?num ?num-total))
+	=>
+	(retract ?num-bombs-input)
+	(printout t "Bomb " (+ ?num 1) ": " crlf)
+	(bind ?string (readline))
+	(assert-string (str-cat "(bomb-pos " ?string ")"))
+	(assert (input-num-bombs (+ ?num 1)))
+)
+
+; end input position
+(defrule input-pos-end
+	(num-bombs ?num-total)
+	?num-bombs-input <- (input-num-bombs ?num-total)
+	=>
+	(retract ?num-bombs-input)
+)
+
+; ============== SETUP NUM AROUND BOMB ================
+
+; replace existing num w/ bomb
+(defrule replace-num-with-bomb
+	(declare (salience 10))
+	(bomb-pos ?x ?y)
+	?num-fact <- (num-pos ?x ?y)
+	=>
+	(retract ?num-fact)
+)
+
+; mark cells around bomb
+(defrule place-num-around-bomb-0
+	(declare (salience 8))
+	(arena-size ?size)
+	(bomb-pos ?x ?y)
+	(direction ?dirx ?diry)
+	(not (and
+		(num-pos ?x1 ?y1 ?num)
+		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+		)
+	)
+	(not (and
+		(bomb-pos ?x1 ?y1)
+		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+		)
+	)
+	(not (bomb-set))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(assert (num-pos (+ ?x ?dirx) (+ ?y ?diry) 0))
+)
+
+; increase according to num of bombs
+(defrule place-num-around-bomb-1
+	(declare (salience 7))
+	(arena-size ?size)
+	(bomb-pos ?x ?y)
+	(direction ?dirx ?diry)
+	?num-fact <- (num-pos ?x1 ?y1 ?num)
+	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+	(not (and
+		(bomb-pos ?x1 ?y1)
+		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+		)
+	)
+	(not (placed-by ?x ?y ?x1 ?y1))
+	(not (bomb-set))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(retract ?num-fact)
+	(assert (num-pos (+ ?x ?dirx) (+ ?y ?diry) (+ ?num 1)))
+	(assert (placed-by ?x ?y ?x1 ?y1))
+)
+
+
+; cleanup facts
+(defrule place-num-around-bomb-2
+	?placed-by-fact <- (placed-by ?x ?y ?x1 ?y1)
+	=>
+	(retract ?placed-by-fact)
+	(assert (bomb-set))
+)
