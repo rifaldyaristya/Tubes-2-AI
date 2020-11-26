@@ -59,7 +59,7 @@
 
 ; input bomb coordinate
 (defrule input-bomb-pos
-	(declare (salience 9))
+	(declare (salience 19))
 	?num-bombs-input <- (input-num-bombs ?num)
 	(num-bombs ?num-total)
 	(test (< ?num ?num-total))
@@ -83,7 +83,7 @@
 
 ; replace existing num w/ bomb
 (defrule replace-num-with-bomb
-	(declare (salience 10))
+	(declare (salience 20))
 	(bomb-pos ?x ?y)
 	?num-fact <- (num-pos ?x ?y)
 	=>
@@ -92,7 +92,7 @@
 
 ; mark cells around bomb
 (defrule place-num-around-bomb-0
-	(declare (salience 8))
+	(declare (salience 18))
 	(arena-size ?size)
 	(bomb-pos ?x ?y)
 	(direction ?dirx ?diry)
@@ -119,7 +119,7 @@
 
 ; increase according to num of bombs
 (defrule place-num-around-bomb-1
-	(declare (salience 7))
+	(declare (salience 17))
 	(arena-size ?size)
 	(bomb-pos ?x ?y)
 	(direction ?dirx ?diry)
@@ -145,20 +145,18 @@
 
 ; cleanup facts
 (defrule place-num-around-bomb-2
-	(declare(salience 2))
+	(declare(salience 16))
 	?placed-by-fact <- (placed-by ?x ?y ?x1 ?y1)
 	=>
 	(retract ?placed-by-fact)
 	(assert (bomb-set))
 )
 
-; 
-
 ; ============== OPEN SAFE CELL ================
 
 ; expand safe cell until it meets numbered cells
 (defrule open-safe-cell
-	(declare(salience 1))
+	(declare(salience 15))
 	(bomb-set)
 	(safe-pos ?x ?y)
 	(arena-size ?size)
@@ -175,6 +173,7 @@
 
 ; mark safe numbered cell as discoverd
 (defrule open-number
+	(declare(salience 14))
 	(safe-pos ?x ?y)
 	(num-pos ?x ?y ?num)
 	=>
@@ -184,51 +183,69 @@
 ; ============== AGENT MOVE ================
 
 ; create the template to count unknown cells
-(defrule check-discovered-number
+(defrule count-unknown-around-num-0
+	(declare(salience 13))
 	(num-discovered-pos ?x ?y ?num)
 	=>
-	(assert(unknown-cells-count ?x ?y 0))
+	(assert(known-cells-count ?x ?y 0))
 )
 
-; count unknown cells for a each number cell
-; rusak gara" variabel di not gak bsa direfer
-;(defrule increase-cells-count
-;	(arena-size ?size)
-;	(bomb-set)
-;	?old-count <- (unknown-cells-count ?x ?y ?num)
-;	(direction ?dirx ?diry)
-;	(and (not(safe-pos ?x1 ?y1)) (not(discovered-bomb-pos ?x1 ?y1)))
-;	(test (and (= ?x1 (+ ?dirx ?x)) (= ?y1 (+ ?diry ?y))) )
-;	(not (placed-by ?x1 ?y1 ?x ?y))
-;	(test (< (+ ?y ?diry) ?size))
-;	(test (>= (+ ?y ?diry) 0))
-;	(test (< (+ ?x ?dirx) ?size))
-;	(test (>= (+ ?x ?dirx) 0))
-;	=>
-;	(retract ?old-count)
-;	(assert (placed-by ?x1 ?y1 ?x ?y))
-;	(assert (unknown-cells-count ?x ?y (+ ?num 1)))
-;)
+; increase according to num of safe cells around
+(defrule count-unknown-around-num-1
+	(declare(salience 12))
+	(arena-size ?size)
+	(bomb-set)
+	(direction ?dirx ?diry)
+	?old-count <- (known-cells-count ?x ?y ?num)
+	(safe-pos ?x1 ?y1)
+	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+	(not (placed-by-2 ?x ?y ?x1 ?y1))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(retract ?old-count)
+	(assert (known-cells-count ?x ?y (+ ?num 1)))
+	(assert (placed-by-2 ?x ?y ?x1 ?y1))
+)
 
-; count unknown cells for a each number cell
-; rusak gara" not gak disupport
+(deffunction to-int (?bool)
+   (if ?bool then 1 else 0))
 
-;(defrule increase-cells-count
-;	(arena-size ?size)
-;	(bomb-set)
-;	?old-count <- (unknown-cells-count ?x ?y ?num)
-;	(direction ?dirx ?diry)
-;	(and (not(safe-pos (+ ?x ?dirx) (+ ?y ?diry))) (not(discovered-bomb-pos (+ ?x ?dirx) (+ ?y ?diry))))
-;	(not (placed-by ?x1 ?y1 ?x ?y))
-;	(test (< (+ ?y ?diry) ?size))
-;	(test (>= (+ ?y ?diry) 0))
-;	(test (< (+ ?x ?dirx) ?size))
-;	(test (>= (+ ?x ?dirx) 0))
-;	=>
-;	(retract ?old-count)
-;	(assert (placed-by ?x1 ?y1 ?x ?y))
-;	(assert (unknown-cells-count ?x ?y (+ ?num 1)))
-;)
+; convert known to unknown
+(defrule count-unknown-around-num-2
+	(declare(salience 11))
+	(arena-size ?size)
+	?known-count <- (known-cells-count ?x ?y ?num)
+	=>
+	(retract ?known-count)
+	(bind ?y-wall
+		(or 
+			(= (+ ?y 1) ?size)
+			(< (- ?y 1) 0)
+	))
+	(bind ?x-wall
+		(or 
+			(= (+ ?x 1) ?size)
+			(< (- ?x 1) 0)
+	))
+	(bind ?num-wall
+		(-
+			(+
+				(* (to-int ?y-wall) 3)
+				(* (to-int ?x-wall) 3)
+			)
+			(to-int (and ?y-wall ?x-wall))
+		)
+	)
+	(assert (unknown-cells-count ?x ?y (- (- 8 ?num-wall) ?num)))
+)
 
-
-
+; cleanup
+(defrule count-unknown-around-num-3
+	(declare(salience 10))
+	?placed-by-fact-2 <- (placed-by-2 ?x ?y ?x1 ?y1)
+	=>
+	(retract ?placed-by-fact-2)
+)
