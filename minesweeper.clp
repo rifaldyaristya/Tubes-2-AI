@@ -212,7 +212,6 @@
 
 ; count unknown cells for a each number cell
 ; rusak gara" not gak disupport
-
 ;(defrule increase-cells-count
 ;	(arena-size ?size)
 ;	(bomb-set)
