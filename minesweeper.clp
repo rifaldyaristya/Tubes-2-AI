@@ -181,5 +181,54 @@
 	(assert(num-discovered-pos ?x ?y ?num))
 )
 
+; ============== AGENT MOVE ================
+
+; create the template to count unknown cells
+(defrule check-discovered-number
+	(num-discovered-pos ?x ?y ?num)
+	=>
+	(assert(unknown-cells-count ?x ?y 0))
+)
+
+; count unknown cells for a each number cell
+; rusak gara" variabel di not gak bsa direfer
+;(defrule increase-cells-count
+;	(arena-size ?size)
+;	(bomb-set)
+;	?old-count <- (unknown-cells-count ?x ?y ?num)
+;	(direction ?dirx ?diry)
+;	(and (not(safe-pos ?x1 ?y1)) (not(discovered-bomb-pos ?x1 ?y1)))
+;	(test (and (= ?x1 (+ ?dirx ?x)) (= ?y1 (+ ?diry ?y))) )
+;	(not (placed-by ?x1 ?y1 ?x ?y))
+;	(test (< (+ ?y ?diry) ?size))
+;	(test (>= (+ ?y ?diry) 0))
+;	(test (< (+ ?x ?dirx) ?size))
+;	(test (>= (+ ?x ?dirx) 0))
+;	=>
+;	(retract ?old-count)
+;	(assert (placed-by ?x1 ?y1 ?x ?y))
+;	(assert (unknown-cells-count ?x ?y (+ ?num 1)))
+;)
+
+; count unknown cells for a each number cell
+; rusak gara" not gak disupport
+
+;(defrule increase-cells-count
+;	(arena-size ?size)
+;	(bomb-set)
+;	?old-count <- (unknown-cells-count ?x ?y ?num)
+;	(direction ?dirx ?diry)
+;	(and (not(safe-pos (+ ?x ?dirx) (+ ?y ?diry))) (not(discovered-bomb-pos (+ ?x ?dirx) (+ ?y ?diry))))
+;	(not (placed-by ?x1 ?y1 ?x ?y))
+;	(test (< (+ ?y ?diry) ?size))
+;	(test (>= (+ ?y ?diry) 0))
+;	(test (< (+ ?x ?dirx) ?size))
+;	(test (>= (+ ?x ?dirx) 0))
+;	=>
+;	(retract ?old-count)
+;	(assert (placed-by ?x1 ?y1 ?x ?y))
+;	(assert (unknown-cells-count ?x ?y (+ ?num 1)))
+;)
+
 
 
