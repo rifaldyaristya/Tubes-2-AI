@@ -249,3 +249,42 @@
 	=>
 	(retract ?placed-by-fact-2)
 )
+
+
+; mark cells that is sure where to put their bombs
+(defrule discover-bombs
+	(unknown-cells-count ?x ?y ?num)
+	(num-pos ?x ?y ?num)
+	=>
+	(assert (sure-pos ?x ?y))
+)
+
+; create every possible location for the sure cells to put their bombs
+(defrule discover-bombs-1
+	(arena-size ?size)
+	(sure-pos ?x ?y)
+	(direction ?dirx ?diry)
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(assert (sure-bomb-possible-pos ?x ?y (+ ?x ?dirx) (+ ?y ?diry)))
+)
+
+; remove wrong possibility
+(defrule discover-bombs-2
+	?wrong-pos <- (sure-bomb-possible-pos ?x ?y ?x1 ?y1)
+	(safe-pos ?x1 ?y1)
+	=>
+	(retract ?wrong-pos)
+)
+
+;discover the bomb based on its right possible position
+(defrule discover-bombs-3
+	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
+	=>
+	(assert (discovered-bomb-pos ?x1 ?y1))
+)
+
+
