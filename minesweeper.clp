@@ -14,6 +14,11 @@
 ; arena-size size
 ; bomb-pos x y
 ; num-pos x y num-of-bombs-around
+; safe-pos x y
+; discovered-bomb-pos x y
+; sure-pos ?x ?y
+; discovered-bomb-pos ?x1 ?y1
+; num-discovered-pos ?x1 ?y1 ?num
 
 
 ; ============= INITIALIZE ===============
@@ -152,6 +157,7 @@
 	(assert (bomb-set))
 )
 
+
 ; ============== OPEN SAFE CELL ================
 
 ; expand safe cell until it meets numbered cells
@@ -197,7 +203,7 @@
 	(bomb-set)
 	(direction ?dirx ?diry)
 	?old-count <- (known-cells-count ?x ?y ?num)
-	(safe-pos ?x1 ?y1)
+	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
 	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
 	(not (placed-by-2 ?x ?y ?x1 ?y1))
 	(test (< (+ ?y ?diry) ?size))
@@ -254,7 +260,8 @@
 ; mark cells that is sure where to put their bombs
 (defrule discover-bombs
 	(unknown-cells-count ?x ?y ?num)
-	(num-pos ?x ?y ?num)
+	(num-discovered-pos ?x ?y ?num)
+	(test (> ?num 0))
 	=>
 	(assert (sure-pos ?x ?y))
 )
@@ -287,4 +294,28 @@
 	(assert (discovered-bomb-pos ?x1 ?y1))
 )
 
+;substract the num value among number around the bombs
+(defrule update-number-value
+	(declare (salience 2))
+	(discovered-bomb-pos ?x ?y)
+	(not (stop-updating ?x ?y))
+	?old-discovered-num <- (num-discovered-pos ?x1 ?y1 ?num)
+	(direction ?dirx ?diry)
+	(and (test (= ?x1 (+ ?x ?dirx))) (test (= ?y1 (+ ?y ?diry))))
+	(not (placed-by-fact-3 ?x ?y ?x1 ?y1))
+	=>
+	(assert (placed-by-fact-3 ?x ?y ?x1 ?y1))
+	(retract ?old-discovered-num)
+	(assert (num-discovered-pos ?x1 ?y1 (- ?num 1)))
+)
+
+;cleanup
+(defrule update-number-value-2
+	(declare (salience 1))
+	?placed-by-fact-3 <- (placed-by-fact-3 ?x ?y ?x1 ?y1)
+	=>
+	(retract ?placed-by-fact-3)
+	(assert (stop-updating ?x ?y))
+
+)
 
