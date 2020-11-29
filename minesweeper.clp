@@ -86,15 +86,6 @@
 
 ; ============== SETUP NUM AROUND BOMB ================
 
-; replace existing num w/ bomb
-(defrule replace-num-with-bomb
-	(declare (salience 20))
-	(bomb-pos ?x ?y)
-	?num-fact <- (num-pos ?x ?y)
-	=>
-	(retract ?num-fact)
-)
-
 ; mark cells around bomb
 (defrule place-num-around-bomb-0
 	(declare (salience 18))
@@ -259,6 +250,7 @@
 
 ; mark cells that is sure where to put their bombs
 (defrule discover-bombs
+	(declare(salience 9))
 	(unknown-cells-count ?x ?y ?num)
 	(num-discovered-pos ?x ?y ?num)
 	(test (> ?num 0))
@@ -268,6 +260,7 @@
 
 ; create every possible location for the sure cells to put their bombs
 (defrule discover-bombs-1
+	(declare(salience 8))
 	(arena-size ?size)
 	(sure-pos ?x ?y)
 	(direction ?dirx ?diry)
@@ -281,6 +274,7 @@
 
 ; remove wrong possibility
 (defrule discover-bombs-2
+	(declare(salience 7))
 	?wrong-pos <- (sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	(safe-pos ?x1 ?y1)
 	=>
@@ -289,10 +283,32 @@
 
 ;discover the bomb based on its right possible position
 (defrule discover-bombs-3
+	(declare(salience 6))
 	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	=>
 	(assert (discovered-bomb-pos ?x1 ?y1))
 )
+
+;generate safe cell near discover bomb pos,belum jadi...gatau kenapa ga pernah masuk sini
+(defrule generateSafeCell
+	(declare(salience 5))
+	(discover-bomb-pos ?x ?y)
+	(direction ?dirx ?diry)
+	(arena-size ?size)
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	(and
+		(unknown-cells-count ?x1 ?y1 ?num)
+		(test (= ?num 0))
+		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1)))
+	)
+ 	=>
+	(assert (coba masuk ?x ?y))
+	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
+)
+
 
 ;substract the num value among number around the bombs
 (defrule update-number-value
@@ -316,6 +332,5 @@
 	=>
 	(retract ?placed-by-fact-3)
 	(assert (stop-updating ?x ?y))
-
 )
 
