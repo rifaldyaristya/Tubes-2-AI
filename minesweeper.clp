@@ -177,11 +177,40 @@
 	(assert(num-discovered-pos ?x ?y ?num))
 )
 
+; substract num according to the number of bombs around -> BELUM TESTED
+(defrule num-request-update
+	(declare(salience 13))
+	(arena-size ?size)
+	old-num <- (num-discovered-pos ?x ?y ?num)
+	(not (stop-updating-0 ?x ?y))
+	(direction ?dirx ?diry)
+	(not (placed-by-0 ?x ?y ?dirx ?diry))
+	(discovered-bomb-pos (+ ?x ?dirx) (+ ?y ?diry))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(retract(old-num))
+	(assert (placed-by-0 ?x ?y ?dirx ?diry))
+	(assert (num-discovered-pos ?x ?y (- ?num 1)))
+
+)
+
+;cleanup
+(defrule num-request-update-1
+	(declare(salience 12))
+	placed-by-fact <- (placed-by-0 ?x ?y ?dirx ?diry)
+	=>
+	(retract(placed-by-fact))
+	(assert (stop-updating-0 ?x ?y))
+)
+
 ; ============== AGENT MOVE ================
 
 ; create the template to count unknown cells
 (defrule count-unknown-around-num-0
-	(declare(salience 13))
+	(declare(salience 11))
 	(num-discovered-pos ?x ?y ?num)
 	=>
 	(assert(known-cells-count ?x ?y 0))
@@ -189,7 +218,7 @@
 
 ; increase according to num of safe cells around
 (defrule count-unknown-around-num-1
-	(declare(salience 12))
+	(declare(salience 10))
 	(arena-size ?size)
 	(bomb-set)
 	(direction ?dirx ?diry)
@@ -212,7 +241,7 @@
 
 ; convert known to unknown
 (defrule count-unknown-around-num-2
-	(declare(salience 11))
+	(declare(salience 9))
 	(arena-size ?size)
 	?known-count <- (known-cells-count ?x ?y ?num)
 	=>
@@ -241,7 +270,7 @@
 
 ; cleanup
 (defrule count-unknown-around-num-3
-	(declare(salience 10))
+	(declare(salience 8))
 	?placed-by-fact-2 <- (placed-by-2 ?x ?y ?x1 ?y1)
 	=>
 	(retract ?placed-by-fact-2)
@@ -250,7 +279,7 @@
 
 ; mark cells that is sure where to put their bombs
 (defrule discover-bombs
-	(declare(salience 9))
+	(declare(salience 7))
 	(unknown-cells-count ?x ?y ?num)
 	(num-discovered-pos ?x ?y ?num)
 	(test (> ?num 0))
@@ -260,7 +289,7 @@
 
 ; create every possible location for the sure cells to put their bombs
 (defrule discover-bombs-1
-	(declare(salience 8))
+	(declare(salience 6))
 	(arena-size ?size)
 	(sure-pos ?x ?y)
 	(direction ?dirx ?diry)
@@ -274,7 +303,7 @@
 
 ; remove wrong possibility
 (defrule discover-bombs-2
-	(declare(salience 7))
+	(declare(salience 5))
 	?wrong-pos <- (sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	(safe-pos ?x1 ?y1)
 	=>
@@ -283,7 +312,7 @@
 
 ;discover the bomb based on its right possible position
 (defrule discover-bombs-3
-	(declare(salience 6))
+	(declare(salience 4))
 	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	=>
 	(assert (discovered-bomb-pos ?x1 ?y1))
@@ -291,7 +320,7 @@
 
 ;generate safe cell near discover bomb pos,belum jadi...gatau kenapa ga pernah masuk sini
 (defrule generateSafeCell
-	(declare(salience 5))
+	(declare(salience 3))
 	(discover-bomb-pos ?x ?y)
 	(direction ?dirx ?diry)
 	(arena-size ?size)
