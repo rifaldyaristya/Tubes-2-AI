@@ -318,23 +318,19 @@
 	(assert (discovered-bomb-pos ?x1 ?y1))
 )
 
-;generate safe cell near discover bomb pos,belum jadi...gatau kenapa ga pernah masuk sini
+;generate safe cell near discovered bomb pos equals num unknown
 (defrule generateSafeCell
 	(declare(salience 3))
-	(discover-bomb-pos ?x ?y)
 	(direction ?dirx ?diry)
 	(arena-size ?size)
+	(num-discovered-pos ?x ?y 0)
 	(test (< (+ ?y ?diry) ?size))
 	(test (>= (+ ?y ?diry) 0))
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
-	(and
-		(unknown-cells-count ?x1 ?y1 ?num)
-		(test (= ?num 0))
-		(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1)))
-	)
+	(not (and (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1)
+          (and(test (= (+ ?x ?diry) ?x1))(test (= (+ ?y ?diry) ?y1)))))
  	=>
-	(assert (coba masuk ?x ?y))
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 )
 
