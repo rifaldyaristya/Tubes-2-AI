@@ -1,4 +1,4 @@
-(deffacts directions
+(deffacts initialize
 	(direction 0 -1)
 	(direction 1 -1)
 	(direction 1 0)

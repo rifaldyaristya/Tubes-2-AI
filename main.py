@@ -37,7 +37,7 @@ while ctr < len(facts):
 			if 'safe-pos' in facts[ctr]:
 				str_safepos = facts[ctr][facts[ctr].find('(')+len('safe-pos ')+1:facts[ctr].find(')')]
 				str_x, str_y = str_safepos.split(' ')
-				arr[int(str_y)][int(str_x)] = '0'
+				arr[int(str_x)][int(str_y)] = '0'
 			ctr += 1
 		# print('====', facts[ctr])
 		ctr -= 1
@@ -48,7 +48,7 @@ while ctr < len(facts):
 			if 'num-discovered-pos-agent' in facts[ctr]:
 				str_discovered = facts[ctr][facts[ctr].find('(')+len('num-discovered-pos-agent ')+1:facts[ctr].find(')')]
 				str_x, str_y, str_num = str_discovered.split(' ')
-				arr[int(str_y)][int(str_x)] = str_num
+				arr[int(str_x)][int(str_y)] = str_num
 			ctr += 1
 		ctr -= 1
 
@@ -57,36 +57,12 @@ while ctr < len(facts):
 	if 'discovered-bomb-pos' in facts[ctr]:
 		str_discovered = facts[ctr][facts[ctr].find('(')+len('discovered-bomb-pos ')+1:facts[ctr].find(')')]
 		str_x, str_y = str_discovered.split(' ')
-		arr[int(str_y)][int(str_x)] = 'B'
+		arr[int(str_x)][int(str_y)] = 'B'
 		states.append(deepcopy(arr))
 
 	ctr += 1
 
 states.append(arr.copy())
 
-# for el in states:
-# 	print(el)
-
-# states.append(arr)
-
-# print(states)
-
-
-
 g = GUI(size, states)
 g.run()
-
-# print(facts)
-
-# 10
-# 10
-# 0 5
-# 2 4
-# 2 9
-# 3 7
-# 4 6
-# 4 7
-# 4 9
-# 5 3
-# 5 9
-# 9 8

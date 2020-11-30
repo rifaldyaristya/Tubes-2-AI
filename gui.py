@@ -17,17 +17,6 @@ class GUI():
 
 		self.window = sg.Window('Minesweeper Agent', layout, background_color='#202231')
 
-		# for _ in range(10):
-		# 	board = [[str(randint(-2, 8)) for j in range(self.size)] for i in range(self.size)]
-		# 	for i in range(len(board)):
-		# 		for j in range(len(board[i])):
-		# 			if(board[i][j] == '-1'):
-		# 				board[i][j] = '?'
-		# 			if(board[i][j] == '-2'):
-		# 				board[i][j] = 'B'
-		# 	self.states.append(board)
-
-
 	def render_cell(self, x, y, status):
 		
 		# num = B if bomb detected
