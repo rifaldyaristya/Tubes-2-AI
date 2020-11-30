@@ -9,3 +9,8 @@ Rule-Based Agent to Solve Minesweeper, built with CLIPS.
 ## Requirements
 1. [clipspy](https://pypi.org/project/clipspy/) or `pip3 install clipspy`.
 2. [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/) or `pip3 install pysimplegui`.
+
+## Running the Application
+```
+python3 main.py
+```
