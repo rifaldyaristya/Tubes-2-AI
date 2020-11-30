@@ -178,47 +178,11 @@
 	(assert(num-discovered-pos ?x ?y ?num))
 )
 
-; substract num according to the number of bombs around -> BELUM TESTED
-(defrule num-request-update
-	(declare(salience 13))
-	(arena-size ?size)
-	(recently-discovered ?x ?y)
-	?old-num <- (num-discovered-pos ?x ?y ?num)
-	(not (stop-updating-0 ?x ?y))
-	(direction ?dirx ?diry)
-	(not (placed-by-0 ?x ?y ?dirx ?diry))
-	(discovered-bomb-pos ?x1 ?y1)
-	(test (= (+ ?x ?dirx) ?x1))
-	(test (= (+ ?y ?diry) ?y1))
-	=>
-	(retract ?old-num)
-	(assert (placed-by-0 ?x ?y ?dirx ?diry))
-	(assert (num-discovered-pos ?x ?y (- ?num 1)))
-
-)
-
-;cleanup
-(defrule num-request-update-1
-	(declare(salience 12))
-	?placed-by-fact <- (placed-by-0 ?x ?y ?dirx ?diry)
-	=>
-	(retract ?placed-by-fact)
-	(assert (stop-updating-0 ?x ?y))
-)
-
-;cleanup
-(defrule num-request-update-2
-	(declare(salience 12))
-	?recently-discovered-fact <- (recently-discovered ?x ?y)
-	=>
-	(retract ?recently-discovered-fact)
-)
-
 ; ============== AGENT MOVE ================
 
 ; create the template to count unknown cells
 (defrule count-unknown-around-num-0
-	(declare(salience 11))
+	(declare(salience 10))
 	(num-discovered-pos ?x ?y ?num)
 	=>
 	(assert(known-cells-count ?x ?y 0))
@@ -226,12 +190,12 @@
 
 ; increase according to num of safe cells around
 (defrule count-unknown-around-num-1
-	(declare(salience 10))
+	(declare(salience 9))
 	(arena-size ?size)
 	(bomb-set)
 	(direction ?dirx ?diry)
 	?old-count <- (known-cells-count ?x ?y ?num)
-	(safe-pos ?x1 ?y1)
+	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
 	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
 	(not (placed-by-2 ?x ?y ?x1 ?y1))
 	(test (< (+ ?y ?diry) ?size))
@@ -249,7 +213,7 @@
 
 ; convert known to unknown
 (defrule count-unknown-around-num-2
-	(declare(salience 9))
+	(declare(salience 8))
 	(arena-size ?size)
 	?known-count <- (known-cells-count ?x ?y ?num)
 	=>
@@ -278,7 +242,7 @@
 
 ; cleanup
 (defrule count-unknown-around-num-3
-	(declare(salience 8))
+	(declare(salience 7))
 	?placed-by-fact-2 <- (placed-by-2 ?x ?y ?x1 ?y1)
 	=>
 	(retract ?placed-by-fact-2)
@@ -287,17 +251,16 @@
 
 ; mark cells that is sure where to put their bombs
 (defrule discover-bombs
-	(declare(salience 7))
+	(declare(salience 6))
 	(unknown-cells-count ?x ?y ?num)
 	(num-discovered-pos ?x ?y ?num)
-	(test (> ?num 0))
 	=>
 	(assert (sure-pos ?x ?y))
 )
 
 ; create every possible location for the sure cells to put their bombs
 (defrule discover-bombs-1
-	(declare(salience 6))
+	(declare(salience 4))
 	(arena-size ?size)
 	(sure-pos ?x ?y)
 	(direction ?dirx ?diry)
@@ -311,7 +274,7 @@
 
 ; remove wrong possibility
 (defrule discover-bombs-2
-	(declare(salience 5))
+	(declare(salience 3))
 	?wrong-pos <- (sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	(safe-pos ?x1 ?y1)
 	=>
@@ -320,7 +283,7 @@
 
 ;discover the bomb based on its right possible position
 (defrule discover-bombs-3
-	(declare(salience 4))
+	(declare(salience 2))
 	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	=>
 	(assert (discovered-bomb-pos ?x1 ?y1))
@@ -328,7 +291,7 @@
 
 ;generate safe cell near discovered bomb pos equals num unknown
 (defrule generateSafeCell
-	(declare(salience 16))
+	(declare(salience 1))
 	(direction ?dirx ?diry)
 	(arena-size ?size)
 	(num-discovered-pos ?x ?y 0)
@@ -347,12 +310,12 @@
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 )
 
+; ============== UPDATE ================
 
 ;substract the num value among number around the bombs
 (defrule update-number-value
-	(declare (salience 2))
+	(declare (salience 100))
 	(discovered-bomb-pos ?x ?y)
-	(not (stop-updating ?x ?y))
 	?old-discovered-num <- (num-discovered-pos ?x1 ?y1 ?num)
 	(direction ?dirx ?diry)
 	(and (test (= ?x1 (+ ?x ?dirx))) (test (= ?y1 (+ ?y ?diry))))
@@ -363,12 +326,5 @@
 	(assert (num-discovered-pos ?x1 ?y1 (- ?num 1)))
 )
 
-;cleanup
-(defrule update-number-value-2
-	(declare (salience 1))
-	?placed-by-fact-3 <- (placed-by-fact-3 ?x ?y ?x1 ?y1)
-	=>
-	(retract ?placed-by-fact-3)
-	(assert (stop-updating ?x ?y))
-)
+
 
