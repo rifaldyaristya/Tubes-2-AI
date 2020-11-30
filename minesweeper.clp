@@ -164,7 +164,6 @@
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
 	=>
-	(assert (recently-discovered (+ ?x ?dirx) (+ ?y ?diry)))
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 
 )
