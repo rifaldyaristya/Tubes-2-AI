@@ -328,7 +328,7 @@
 
 ;generate safe cell near discovered bomb pos equals num unknown
 (defrule generateSafeCell
-	(declare(salience 3))
+	(declare(salience 16))
 	(direction ?dirx ?diry)
 	(arena-size ?size)
 	(num-discovered-pos ?x ?y 0)
@@ -336,9 +336,14 @@
 	(test (>= (+ ?y ?diry) 0))
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
-	(not (and (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1)
-          (and(test (= (+ ?x ?diry) ?x1))(test (= (+ ?y ?diry) ?y1)))))
- 	=>
+	(not (exists 
+		(discovered-bomb-pos ?x1 ?y1)
+			(and(test (= (+ ?x ?dirx) ?x1))
+				(test (= (+ ?y ?diry) ?y1))
+			)
+		)
+	)
+ 	=> 
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 )
 
