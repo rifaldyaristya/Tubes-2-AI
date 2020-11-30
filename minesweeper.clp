@@ -174,6 +174,7 @@
 	(safe-pos ?x ?y)
 	(num-pos ?x ?y ?num)
 	=>
+	(assert(num-discovered-pos-agent ?x ?y ?num))
 	(assert(num-discovered-pos ?x ?y ?num))
 )
 
