@@ -73,19 +73,13 @@ def prev_state():
 		window['>'].update(disabled=False)
 	render_state(STATES[STATE_COUNTER])
 
-
-# render_state(STATES[STATE_COUNTER])
-
 while True:
-    event, values = window.read()
-    if event in (sg.WIN_CLOSED, 'Exit'):
-        break
-    # window[(row, col)].update('New text')   # To change a button's text, use this pattern
-    # For this example, change the text of the button to the board's value and turn color black
-    if(event == '<'):
-    	prev_state()
-    elif(event == '>'):
-    	next_state()
-    # else:
-	   #  window[event].update(board[event[0]][event[1]], button_color=('white','blue'))
+	event, values = window.read()
+	if event in (sg.WIN_CLOSED, 'Exit'):
+		break
+	if(event == '<'):
+		prev_state()
+	elif(event == '>'):
+		next_state()
+
 window.close()
