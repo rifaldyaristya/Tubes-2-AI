@@ -187,67 +187,6 @@
 	(assert(known-cells-count ?x ?y 0))
 )
 
-; increase according to num of safe cells around
-(defrule count-unknown-around-num-1
-	(declare(salience 9))
-	(arena-size ?size)
-	(bomb-set)
-	(direction ?dirx ?diry)
-	?old-count <- (known-cells-count ?x ?y ?num)
-	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
-	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
-	(not (placed-by-2 ?x ?y ?x1 ?y1))
-	(test (< (+ ?y ?diry) ?size))
-	(test (>= (+ ?y ?diry) 0))
-	(test (< (+ ?x ?dirx) ?size))
-	(test (>= (+ ?x ?dirx) 0))
-	=>
-	(retract ?old-count)
-	(assert (known-cells-count ?x ?y (+ ?num 1)))
-	(assert (placed-by-2 ?x ?y ?x1 ?y1))
-)
-
-(deffunction to-int (?bool)
-   (if ?bool then 1 else 0))
-
-; convert known to unknown
-(defrule count-unknown-around-num-2
-	(declare(salience 8))
-	(arena-size ?size)
-	?known-count <- (known-cells-count ?x ?y ?num)
-	=>
-	(retract ?known-count)
-	(bind ?y-wall
-		(or 
-			(= (+ ?y 1) ?size)
-			(< (- ?y 1) 0)
-	))
-	(bind ?x-wall
-		(or 
-			(= (+ ?x 1) ?size)
-			(< (- ?x 1) 0)
-	))
-	(bind ?num-wall
-		(-
-			(+
-				(* (to-int ?y-wall) 3)
-				(* (to-int ?x-wall) 3)
-			)
-			(to-int (and ?y-wall ?x-wall))
-		)
-	)
-	(assert (unknown-cells-count ?x ?y (- (- 8 ?num-wall) ?num)))
-)
-
-; cleanup
-(defrule count-unknown-around-num-3
-	(declare(salience 7))
-	?placed-by-fact-2 <- (placed-by-2 ?x ?y ?x1 ?y1)
-	=>
-	(retract ?placed-by-fact-2)
-)
-
-
 ; mark cells that is sure where to put their bombs
 (defrule discover-bombs
 	(declare(salience 6))
@@ -285,6 +224,7 @@
 	(declare(salience 2))
 	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	=>
+	(printout t "Bomb " ?x1 " " ?y1 crlf)
 	(assert (discovered-bomb-pos ?x1 ?y1))
 )
 
@@ -324,6 +264,68 @@
 	(retract ?old-discovered-num)
 	(assert (num-discovered-pos ?x1 ?y1 (- ?num 1)))
 )
+
+; increase according to num of safe cells around
+(defrule count-unknown-around-num-1
+	(declare (salience 100))
+	(arena-size ?size)
+	(bomb-set)
+	(direction ?dirx ?diry)
+	?old-count <- (known-cells-count ?x ?y ?num)
+	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
+	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
+	(not (placed-by-2 ?x ?y ?x1 ?y1))
+	(test (< (+ ?y ?diry) ?size))
+	(test (>= (+ ?y ?diry) 0))
+	(test (< (+ ?x ?dirx) ?size))
+	(test (>= (+ ?x ?dirx) 0))
+	=>
+	(retract ?old-count)
+	(assert (known-cells-count ?x ?y (+ ?num 1)))
+	(assert (placed-by-2 ?x ?y ?x1 ?y1))
+)
+
+(deffunction to-int (?bool)
+   (if ?bool then 1 else 0))
+
+; convert known to unknown
+(defrule count-unknown-around-num-2
+	(declare(salience 99))
+	(arena-size ?size)
+	?known-count <- (known-cells-count ?x ?y ?num)
+	=>
+	(bind ?y-wall
+		(or 
+			(= (+ ?y 1) ?size)
+			(< (- ?y 1) 0)
+	))
+	(bind ?x-wall
+		(or 
+			(= (+ ?x 1) ?size)
+			(< (- ?x 1) 0)
+	))
+	(bind ?num-wall
+		(-
+			(+
+				(* (to-int ?y-wall) 3)
+				(* (to-int ?x-wall) 3)
+			)
+			(to-int (and ?y-wall ?x-wall))
+		)
+	)
+	(assert (unknown-cells-count ?x ?y (- (- 8 ?num-wall) ?num)))
+)
+
+; delete old unknown (the unknown with higher value (lower is more uptodate))
+(defrule count-unknown-around-num-3
+	(declare (salience 101))
+	?old-unknown <- (unknown-cells-count ?x ?y ?old-num)
+	(unknown-cells-count ?x ?y ?new-num)
+	(test (< ?new-num ?old-num))
+	=>
+	(retract ?old-unknown)
+)
+
 
 
 
