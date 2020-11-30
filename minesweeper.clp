@@ -338,9 +338,9 @@
 	(test (>= (+ ?x ?dirx) 0))
 	(not (exists 
 		(discovered-bomb-pos ?x1 ?y1)
-        (and(test (= (+ ?x ?dirx) ?x1))
-			(test (= (+ ?y ?diry) ?y1))
-		)
+			(and(test (= (+ ?x ?dirx) ?x1))
+				(test (= (+ ?y ?diry) ?y1))
+			)
 		)
 	)
  	=> 
