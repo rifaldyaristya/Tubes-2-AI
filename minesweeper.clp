@@ -227,7 +227,6 @@
 	(declare(salience 2))
 	(sure-bomb-possible-pos ?x ?y ?x1 ?y1)
 	=>
-	(printout t "Bomb " ?x1 " " ?y1 crlf)
 	(assert (discovered-bomb-pos ?x1 ?y1))
 )
 
@@ -330,5 +329,11 @@
 )
 
 
-
+; ============== BOMB PRINT ================
+(defrule bomb-print
+	(declare (salience 500))
+	(discovered-bomb-pos ?x ?y)
+	=>
+	(printout t "Bomb found at position (" ?x ", " ?y ")." crlf)
+)
 

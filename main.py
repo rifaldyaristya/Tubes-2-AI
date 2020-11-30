@@ -12,7 +12,6 @@ facts = []
 size = 0
 for fact in environment.facts():
 	str_fact = str(fact)
-	print(str_fact)
 	facts.append(str_fact)
 	if 'arena-size' in str_fact:
 		str_size = str_fact[str_fact.find('(')+len('arena-size ')+1:str_fact.find(')')]
@@ -39,11 +38,9 @@ while ctr < len(facts):
 				str_x, str_y = str_safepos.split(' ')
 				arr[int(str_x)][int(str_y)] = '0'
 			ctr += 1
-		# print('====', facts[ctr])
 		ctr -= 1
 
 	if 'num-discovered-pos-agent' in facts[ctr]:
-		# print('=>>', facts[ctr])
 		while ctr < len(facts) and 'discovered-bomb-pos' not in facts[ctr] and 'safe-pos' not in facts[ctr]:
 			if 'num-discovered-pos-agent' in facts[ctr]:
 				str_discovered = facts[ctr][facts[ctr].find('(')+len('num-discovered-pos-agent ')+1:facts[ctr].find(')')]
