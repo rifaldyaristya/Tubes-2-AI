@@ -164,6 +164,7 @@
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
 	=>
+	(assert (recently-discovered (+ ?x ?dirx) (+ ?y ?diry)))
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 
 )
@@ -181,6 +182,7 @@
 (defrule num-request-update
 	(declare(salience 13))
 	(arena-size ?size)
+	(recently-discovered ?x ?y)
 	?old-num <- (num-discovered-pos ?x ?y ?num)
 	(not (stop-updating-0 ?x ?y))
 	(direction ?dirx ?diry)
@@ -202,6 +204,14 @@
 	=>
 	(retract ?placed-by-fact)
 	(assert (stop-updating-0 ?x ?y))
+)
+
+;cleanup
+(defrule num-request-update-2
+	(declare(salience 12))
+	?recently-discovered-fact <- (recently-discovered ?x ?y)
+	=>
+	(retract ?recently-discovered-fact)
 )
 
 ; ============== AGENT MOVE ================
