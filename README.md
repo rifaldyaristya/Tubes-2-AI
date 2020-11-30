@@ -15,3 +15,7 @@ Rule-Based Agent to Solve Minesweeper, built with CLIPS.
 python3 main.py
 ```
 *\*Preferably run on UNIX-based systems (CRLF problems on clipspy windows)*
+
+or
+
+Run [minesweeper.clp](minesweeper.clp) on CLIPS (no GUI).
