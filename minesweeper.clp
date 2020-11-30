@@ -182,8 +182,10 @@
 ; create the template to count unknown cells
 (defrule count-unknown-around-num-0
 	(declare(salience 10))
-	(num-discovered-pos ?x ?y ?num)
+	(num-discovered-pos ?x ?y ?)
+	(not(generated-template ?x ?y))
 	=>
+	(assert(generated-template ?x ?y))
 	(assert(known-cells-count ?x ?y 0))
 )
 
