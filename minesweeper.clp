@@ -164,6 +164,7 @@
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
 	=>
+	(assert (recently-discovered (+ ?x ?dirx) (+ ?y ?diry)))
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 
 )
@@ -181,6 +182,7 @@
 (defrule num-request-update
 	(declare(salience 13))
 	(arena-size ?size)
+	(recently-discovered ?x ?y)
 	?old-num <- (num-discovered-pos ?x ?y ?num)
 	(not (stop-updating-0 ?x ?y))
 	(direction ?dirx ?diry)
@@ -204,6 +206,14 @@
 	(assert (stop-updating-0 ?x ?y))
 )
 
+;cleanup
+(defrule num-request-update-2
+	(declare(salience 12))
+	?recently-discovered-fact <- (recently-discovered ?x ?y)
+	=>
+	(retract ?recently-discovered-fact)
+)
+
 ; ============== AGENT MOVE ================
 
 ; create the template to count unknown cells
@@ -221,7 +231,7 @@
 	(bomb-set)
 	(direction ?dirx ?diry)
 	?old-count <- (known-cells-count ?x ?y ?num)
-	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
+	(safe-pos ?x1 ?y1)
 	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
 	(not (placed-by-2 ?x ?y ?x1 ?y1))
 	(test (< (+ ?y ?diry) ?size))
@@ -318,7 +328,7 @@
 
 ;generate safe cell near discovered bomb pos equals num unknown
 (defrule generateSafeCell
-	(declare(salience 3))
+	(declare(salience 16))
 	(direction ?dirx ?diry)
 	(arena-size ?size)
 	(num-discovered-pos ?x ?y 0)
@@ -326,9 +336,14 @@
 	(test (>= (+ ?y ?diry) 0))
 	(test (< (+ ?x ?dirx) ?size))
 	(test (>= (+ ?x ?dirx) 0))
-	(not (and (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1)
-          (and(test (= (+ ?x ?diry) ?x1))(test (= (+ ?y ?diry) ?y1)))))
- 	=>
+	(not (exists 
+		(discovered-bomb-pos ?x1 ?y1)
+			(and(test (= (+ ?x ?dirx) ?x1))
+				(test (= (+ ?y ?diry) ?y1))
+			)
+		)
+	)
+ 	=> 
 	(assert (safe-pos (+ ?x ?dirx) (+ ?y ?diry)))
 )
 
