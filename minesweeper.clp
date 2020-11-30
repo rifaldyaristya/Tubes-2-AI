@@ -231,7 +231,7 @@
 	(bomb-set)
 	(direction ?dirx ?diry)
 	?old-count <- (known-cells-count ?x ?y ?num)
-	(or (safe-pos ?x1 ?y1) (discovered-bomb-pos ?x1 ?y1))
+	(safe-pos ?x1 ?y1)
 	(and (test (= (+ ?y ?diry) ?y1)) (test (= (+ ?x ?dirx) ?x1))) 
 	(not (placed-by-2 ?x ?y ?x1 ?y1))
 	(test (< (+ ?y ?diry) ?size))
