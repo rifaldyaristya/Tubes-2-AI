@@ -181,17 +181,15 @@
 (defrule num-request-update
 	(declare(salience 13))
 	(arena-size ?size)
-	old-num <- (num-discovered-pos ?x ?y ?num)
+	?old-num <- (num-discovered-pos ?x ?y ?num)
 	(not (stop-updating-0 ?x ?y))
 	(direction ?dirx ?diry)
 	(not (placed-by-0 ?x ?y ?dirx ?diry))
-	(discovered-bomb-pos (+ ?x ?dirx) (+ ?y ?diry))
-	(test (< (+ ?y ?diry) ?size))
-	(test (>= (+ ?y ?diry) 0))
-	(test (< (+ ?x ?dirx) ?size))
-	(test (>= (+ ?x ?dirx) 0))
+	(discovered-bomb-pos ?x1 ?y1)
+	(test (= (+ ?x ?dirx) ?x1))
+	(test (= (+ ?y ?diry) ?y1))
 	=>
-	(retract(old-num))
+	(retract ?old-num)
 	(assert (placed-by-0 ?x ?y ?dirx ?diry))
 	(assert (num-discovered-pos ?x ?y (- ?num 1)))
 
@@ -200,9 +198,9 @@
 ;cleanup
 (defrule num-request-update-1
 	(declare(salience 12))
-	placed-by-fact <- (placed-by-0 ?x ?y ?dirx ?diry)
+	?placed-by-fact <- (placed-by-0 ?x ?y ?dirx ?diry)
 	=>
-	(retract(placed-by-fact))
+	(retract ?placed-by-fact)
 	(assert (stop-updating-0 ?x ?y))
 )
 
